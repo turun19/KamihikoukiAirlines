@@ -18,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +40,7 @@ public class AuthService {
     @Autowired
     JwtUtils jwtUtils;
 
+//    sign in
     public AuthenticationResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
@@ -56,25 +56,22 @@ public class AuthService {
                 .collect(Collectors.toList());
 
         return new AuthenticationResponse(userDetails.getId(),
-                userDetails.getUsername(),
                 userDetails.getEmail(),
+                userDetails.getUsername(),
                 userDetails.getPassword(),
                 roles,
                 jwtCookie.getValue());
     }
 
-    @Transactional
-    public void registerUser(SignupRequest signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            throw new IllegalArgumentException("Error: Username is already taken!");
-        }
 
+//    sign up
+    public void registerUser(SignupRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             throw new IllegalArgumentException("Error: Email is already in use!");
         }
 
         // Create new user's account
-        Users user = new Users(signUpRequest.getUsername(),
+        Users user = new Users(signUpRequest.getName(),
                 signUpRequest.getEmail(),
                 signUpRequest.getPhoneNumber(),
                 encoder.encode(signUpRequest.getPassword()));
